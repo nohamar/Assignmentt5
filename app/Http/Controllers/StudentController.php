@@ -73,3 +73,6 @@ class StudentController extends Controller
     public function update(Request $request, $id) {}
     public function destroy($id) {}
 }
+
+// Fixed AJAX search issue
+// Updated by:Noha
