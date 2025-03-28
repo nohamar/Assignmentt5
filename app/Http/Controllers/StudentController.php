@@ -8,11 +8,43 @@ use App\Models\Student;
 class StudentController extends Controller
 {
     // Display a list of students
-    public function index()
-    {
-        $students = Student::all(); // Later: add filtering logic
-        return view('index', compact('students'));
-    }
+    public function index(Request $request)
+        {
+            if ($request->ajax()) {
+                $query = trim($request->input('search'));
+                $min = $request->input('min', 0); 
+                $max = $request->input('max', 100); 
+
+                if (!empty($query)) {
+                   
+
+                $students = Student::where('name', 'LIKE', "%{$query}%")
+                ->whereBetween('age', [$min, $max])
+                  ->get();
+
+                } else {
+                    $students = Student::all();
+                }
+                return response()->json($students, 200);
+            }
+        
+            // For regular requests (non-AJAX), return the view
+            if ($request->has('search', 'min', 'max')) {
+                $query = $request->search;
+                $min = $request->min; 
+                $max = $request->max; 
+
+                $students = Student::where('name', 'LIKE', "%{$query}%")
+                    ->whereBetween('age', [$min, $max])
+                    ->get();
+            } else {
+                $students = Student::all();
+            }
+            
+            return view('students.index', compact('students'));
+        }
+        
+    
 
     // Show the form to create a new student
     public function create()
@@ -33,7 +65,7 @@ class StudentController extends Controller
             'age'  => $request->age,
         ]);
 
-        return redirect()->route('index')->with('success', 'Student added successfully!');
+        return redirect()->route('student.index')->with('success', 'Student added successfully!');
     }
 
     public function show($id) {}
